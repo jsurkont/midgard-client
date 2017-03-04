@@ -16,11 +16,18 @@ class DeviceCard extends React.Component {
 
   render() {
     return (
-      <div class="card">
+      <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4 class="p-0">{this.props.device.name}</h4>
+          <div>
+            <button type="button" class="btn btn-secondary" aria-label="Details"
+              onClick={this.handleClick}>
+              <i class="fa fa-chevron-right fa-lg" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
         <div class="card-block">
-          <h4 class="card-title">{this.props.device.name}</h4>
           <p class="card-text">{this.props.device.description}</p>
-          <button type="button" class="btn btn-info" onClick={this.handleClick}>Details</button>
         </div>
       </div>
     );
@@ -72,7 +79,7 @@ export default class Devices extends React.Component {
     if (this.state.selectedDevice === null) {
       content =
         <div>
-          <div class="row" style={{marginBottom: '2rem'}}>
+          <div class="row mb-3">
             <div class="col">
             { this.state.devices.map(device => <DeviceCard key={device._id}
               device={device} handleClick={this.handleDeviceSelect} />) }
@@ -83,6 +90,7 @@ export default class Devices extends React.Component {
               <p>
                 <button type="button" class="btn btn-secondary"
                   onClick={this.detectDevices}>
+                  <i class="fa fa-refresh" aria-hidden="true"></i> &nbsp;
                   Detect devices
                 </button>
               </p>
@@ -95,6 +103,7 @@ export default class Devices extends React.Component {
           <p>
             <button type="button" class="btn btn-secondary"
               onClick={this.showAllDevices}>
+              <i class="fa fa-chevron-left" aria-hidden="true"></i> &nbsp;
               Show all devices
             </button>
           </p>

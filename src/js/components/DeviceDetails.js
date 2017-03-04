@@ -43,17 +43,23 @@ class ActionsPanel extends React.Component {
     const helpMsg =
       <ul class="list-unstyled">
         { this.props.actions.map(action =>
-          <li key={action.name}><strong>{action.name}:</strong>
+          <li key={action.name}><strong>{action.name}:</strong> &nbsp;
           {action.description}</li>)}
       </ul>;
     return (
       <div>
         <h4>Actions</h4>
-        <div class="btn-group" style={{marginBottom: 0.6 + 'rem'}}>
-          { actionButtons }
+        <div class="btn-toolbar my-4" role="toolbar">
+          <div class="btn-group mr-2" role="group">
+            <button type="button" class="btn btn-info btn-sm px-3"
+              onClick={this.handleToogleHelp} aria-label="Help">
+              <i class="fa fa-question-circle fa-lg" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div class="btn-group" role="group">
+            { actionButtons }
+          </div>
         </div>
-        <p><button type="button" class="btn btn-info btn-sm"
-          onClick={this.handleToogleHelp}>Help</button></p>
         { this.state.showHelp && helpMsg }
       </div>
     );

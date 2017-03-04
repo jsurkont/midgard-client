@@ -9,6 +9,8 @@ export default class JobForm extends React.Component {
       minute: '',
       days: new Array(7).fill(false),
     };
+    this.weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday',
+      'Friday', 'Saturday'];
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -50,14 +52,15 @@ export default class JobForm extends React.Component {
 
   render() {
     const actions = this.props.actions || []
-    const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday',
-      'Friday', 'Saturday'];
 
-    let submitButton = <input type="button" value="Add job"
-      class="btn btn-success btn-sm disabled" aria-disabled="true" />;
+    let submitButton = <button type="button"
+      class="btn btn-success btn-sm disabled" aria-disabled="true">
+        <i class="fa fa-ban" aria-hidden="true"> Add job</i>
+      </button>;
     if (this.state.days.includes(true) && this.state.hour && this.state.minute) {
-      submitButton = <input type="submit" value="Add job"
-        class="btn btn-success btn-sm" />;
+      submitButton = <button type="submit" class="btn btn-success btn-sm">
+        <i class="fa fa-plus" aria-hidden="true"> Add job</i>
+        </button>;
     }
 
     return (
@@ -96,16 +99,30 @@ export default class JobForm extends React.Component {
             />
           </div>
         </div>
-        { this.state.days.map((day, index) =>
-          <div key={index} class="form-check">
-              <label class="form-check-label">
-                <input class="form-check-input" type="checkbox" name={index}
-                  checked={day} onChange={this.handleChange}
-                  style={{marginRight: 0.4 + 'rem'}} />
-                { weekdays[index] }
-              </label>
+        <div class="row">
+          <div class="col">
+            {[1, 2, 3, 4, 5].map(index =>
+              <div key={index.toString()} class="form-check">
+                  <label class="form-check-label">
+                    <input class="form-check-input mr-2" type="checkbox" name={index}
+                      checked={this.state.days[index]} onChange={this.handleChange} />
+                    { this.weekdays[index] }
+                  </label>
+              </div>
+            )}
           </div>
-        )}
+          <div class="col">
+            {[0, 6].map(index =>
+              <div key={index.toString()} class="form-check">
+                  <label class="form-check-label">
+                    <input class="form-check-input mr-2" type="checkbox" name={index}
+                      checked={this.state.days[index]} onChange={this.handleChange} />
+                    { this.weekdays[index] }
+                  </label>
+              </div>
+            )}
+          </div>
+        </div>
         <p>{ submitButton }</p>
       </form>
     );
