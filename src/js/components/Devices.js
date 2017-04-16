@@ -1,6 +1,8 @@
 import React from 'react';
 import axios from 'axios';
 
+import * as DeviceActions from '../actions/DeviceActions';
+import DeviceStore from '../stores/DeviceStore';
 import DeviceDetails from './DeviceDetails';
 
 
@@ -44,26 +46,32 @@ export default class Devices extends React.Component {
     };
 
     this.apiUrl = `http://${window.location.hostname}:8000/api/devices`;
+    this.getDevices = this.getDevices.bind(this);
     this.detectDevices = this.detectDevices.bind(this);
     this.handleDeviceSelect = this.handleDeviceSelect.bind(this);
     this.showAllDevices = this.showAllDevices.bind(this);
   }
 
-  getDevices() {
-    axios.get(this.apiUrl)
-      .then(res => this.setState({devices: res.data}))
-      .catch(error => console.log(error));
+  componentWillMount() {
+    DeviceStore.on("change", this.getDevices);
   }
 
   componentDidMount() {
-    this.getDevices();
+    DeviceActions.loadDevices();
+  }
+
+  componentWillUnmount() {
+    DeviceStore.removeListener("change", this.getDevices);
+  }
+
+  getDevices() {
+    this.setState({
+      devices: DeviceStore.getAll(),
+    });
   }
 
   detectDevices() {
-    axios.put(this.apiUrl)
-      .then()
-      .catch(error => console.log(error));
-    // wait a few seconds and then update devices from the server
+    DeviceActions.reloadDevices();
   }
 
   handleDeviceSelect(device) {

@@ -3,6 +3,8 @@ import axios from 'axios';
 
 import Job from './Job';
 import JobForm from './JobForm';
+import * as JobActions from '../actions/JobActions';
+import JobStore from '../stores/JobStore';
 
 class ActionButton extends React.Component {
   constructor(props) {
@@ -66,67 +68,67 @@ class ActionsPanel extends React.Component {
   }
 }
 
+class Alert extends React.Component {
+  render () {
+    let box;
+    switch(this.props.type) {
+      case 'danger':
+        box = <div class="alert alert-danger" role="alert">{this.props.content}</div>;
+        break;
+      case 'success':
+        box = <div class="alert alert-success" role="alert">{this.props.content}</div>;
+        break;
+      default:
+        box = <div class="alert" role="alert">{this.props.content}</div>;
+    }
+    return box;
+  }
+}
+
 export default class DeviceDetails extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       jobs: [],
-      success: null,
-      error: null,
+      msg: {type: null, content: null},
     };
 
+    this.getJobs = this.getJobs.bind(this);
     this.runAction = this.runAction.bind(this);
     this.addJob = this.addJob.bind(this);
     this.deleteJob = this.deleteJob.bind(this);
   }
 
-  componentDidMount() {
-    axios.get(`${this.props.apiUrl}/${this.props.device._id}/jobs`)
-      .then(res => this.setState({jobs: res.data}))
-      .catch(error => console.log(error));
+  componentWillMount() {
+    JobStore.on("change", this.getJobs);
   }
 
-  runAction(name) {
-    axios.post(`${this.props.apiUrl}/${this.props.device._id}`, { action: name })
-      .then(res => this.setState(
-        { success: `Action '${name}' has been sent.` }))
-      .catch(error => this.setState(
-        { error: `Error occured while sending action '${name}'.` }));
+  componentDidMount() {
+    JobActions.loadJobs(this.props.device._id);
+  }
+
+  componentWillUnmount() {
+    JobStore.removeListener("change", this.getJobs);
+    JobActions.cleanJobMsg();
+  }
+
+  getJobs() {
+    this.setState({
+      jobs: JobStore.getAll(),
+      msg: JobStore.getMsg(),
+    });
+  }
+
+  runAction(job) {
+    JobActions.runJob(this.props.device._id, job);
   }
 
   addJob(data) {
-    axios.post(
-        `${this.props.apiUrl}/${this.props.device._id}/jobs`,
-        { action: data.action, cron: data.cron },
-      )
-      .then(res => {
-        const jobs = this.state.jobs;
-        jobs.push(res.data);
-        this.setState(
-          { jobs: jobs,
-            success: `Job '${data.action} @ ${data.cron}' has been added.`
-          }
-        );
-      })
-      .catch(error => this.setState({ error: error }));
+    JobActions.addJob(this.props.device._id, data.action, data.cron);
   }
 
-  deleteJob(id) {
-    axios.delete(
-        `${this.props.apiUrl}/${this.props.device._id}/jobs/${id}`
-      )
-      .then(res => {
-        const jobs = [];
-        for (let job of this.state.jobs) {
-          if (job._id !== id) jobs.push(job);
-        }
-        this.setState(
-          { jobs: jobs,
-            success: `Job '${id}' has been deleted.`
-          }
-        );
-      })
-      .catch(error => this.setState({ error: error }));
+  deleteJob(job) {
+    JobActions.deleteJob(this.props.device._id, job);
   }
 
   render() {
@@ -155,8 +157,9 @@ export default class DeviceDetails extends React.Component {
         <div class="row">
           <div class="col">
             <h3>{this.props.device.name}</h3>
-            { this.state.error && <div class="alert alert-danger" role="alert">{this.state.error}</div> }
-            { this.state.success && <div class="alert alert-success" role="alert">{this.state.success}</div> }
+            { this.state.msg.content &&
+              <Alert content={this.state.msg.content} type={this.state.msg.type} />
+            }
             <p>{this.props.device.description}</p>
             <p>Created at: {(new Date(this.props.device.createdAt)).toUTCString()}</p>
             <p>Last message: {this.props.device.lastMsg}</p>
