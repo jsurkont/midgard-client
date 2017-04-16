@@ -1,9 +1,13 @@
 import React from 'react';
-import axios from 'axios';
 
 import * as DeviceActions from '../actions/DeviceActions';
+import * as MessageActions from '../actions/MessageActions';
 import DeviceStore from '../stores/DeviceStore';
+import MessageStore from '../stores/MessageStore';
+
+import Alert from './Alert';
 import DeviceDetails from './DeviceDetails';
+import JobStore from '../stores/JobStore';
 
 
 class DeviceCard extends React.Component {
@@ -43,10 +47,11 @@ export default class Devices extends React.Component {
     this.state = {
       devices: [],
       selectedDevice: null,
+      msg: {type: null, content: null},
     };
 
-    this.apiUrl = `http://${window.location.hostname}:8000/api/devices`;
     this.getDevices = this.getDevices.bind(this);
+    this.getMsg = this.getMsg.bind(this);
     this.detectDevices = this.detectDevices.bind(this);
     this.handleDeviceSelect = this.handleDeviceSelect.bind(this);
     this.showAllDevices = this.showAllDevices.bind(this);
@@ -54,6 +59,7 @@ export default class Devices extends React.Component {
 
   componentWillMount() {
     DeviceStore.on("change", this.getDevices);
+    MessageStore.on("change", this.getMsg);
   }
 
   componentDidMount() {
@@ -62,12 +68,18 @@ export default class Devices extends React.Component {
 
   componentWillUnmount() {
     DeviceStore.removeListener("change", this.getDevices);
+    MessageStore.removeListener("change", this.getMsg);
+    MessageActions.clean();
   }
 
   getDevices() {
     this.setState({
       devices: DeviceStore.getAll(),
     });
+  }
+
+  getMsg() {
+    this.setState({ msg: MessageStore.get() });
   }
 
   detectDevices() {
@@ -87,6 +99,9 @@ export default class Devices extends React.Component {
     if (this.state.selectedDevice === null) {
       content =
         <div>
+          { this.state.msg.content &&
+            <Alert content={this.state.msg.content} type={this.state.msg.type} />
+          }
           <div class="row mb-3">
             <div class="col">
             { this.state.devices.map(device => <DeviceCard key={device._id}
@@ -115,7 +130,7 @@ export default class Devices extends React.Component {
               Show all devices
             </button>
           </p>
-          <DeviceDetails device={this.state.selectedDevice} apiUrl={this.apiUrl} />
+          <DeviceDetails device={this.state.selectedDevice} />
         </div>
     }
     return content;

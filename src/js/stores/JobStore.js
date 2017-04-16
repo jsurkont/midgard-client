@@ -8,15 +8,10 @@ class JobStore extends EventEmitter {
   constructor() {
     super();
     this.jobs = [];
-    this.msg = {type: null, content: null};
   }
 
   getAll() {
     return this.jobs;
-  }
-
-  getMsg() {
-    return this.msg;
   }
 
   handleActions(action) {
@@ -29,18 +24,8 @@ class JobStore extends EventEmitter {
         this.jobs.push(action.job);
         this.emit("change");
         break;
-      case Constants.UPDATE_JOB_MSG:
-        this.msg.type = action.data.type;
-        this.msg.content = action.data.content;
-        this.emit("change");
-        break;
-      case Constants.CLEAN_JOB_MSG:
-        this.msg.type = null;
-        this.msg.content = null;
-        break;
     }
   }
-
 }
 
 const jobStore = new JobStore;

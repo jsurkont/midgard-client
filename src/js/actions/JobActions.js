@@ -2,6 +2,7 @@ import axios from 'axios';
 
 import Constants from '../Constants';
 import Dispatcher from '../Dispatcher';
+import * as MessageActions from './MessageActions';
 
 
 const url = `http://${window.location.hostname}:8000/api/devices`;
@@ -11,48 +12,31 @@ export function loadJobs(device) {
     .then(res => {
       Dispatcher.dispatch({ type: Constants.RECEIVE_JOBS, jobs: res.data });
     })
-    .catch(error => { Dispatcher.dispatch(
-      { type: Constants.UPDATE_JOB_MSG, data: {type: 'danger', content: error} });
-    });
+    .catch(error => MessageActions.update(error, 'danger'));
 }
 
 export function addJob(device, job, cron) {
   axios.post(`${url}/${device}/jobs`, { action: job, cron: cron })
     .then(res => {
       Dispatcher.dispatch({ type: Constants.ADD_JOB, job: res.data });
-      Dispatcher.dispatch({ type: Constants.UPDATE_JOB_MSG,
-        data: {type: 'success',
-        content: `Job '${job} @ ${cron}' has been added.`} });
+      MessageActions.update(`Job '${job} @ ${cron}' has been added.`, 'success');
     })
-    .catch(error => { Dispatcher.dispatch(
-      { type: Constants.UPDATE_JOB_MSG, data: {type: 'danger', content: error} });
-    });
+    .catch(error => MessageActions.update(error, 'danger'));
 }
 
 export function deleteJob(device, job) {
   axios.delete(`${url}/${device}/jobs/${job}`)
     .then(res => {
       loadJobs(device);
-      Dispatcher.dispatch({ type: Constants.UPDATE_JOB_MSG,
-        data: {type: 'success', content: `Job '${job}' has been deleted.`} });
+      MessageActions.update(`Job '${job}' has been deleted.`, 'success');
     })
-    .catch(error => { Dispatcher.dispatch(
-      { type: Constants.UPDATE_JOB_MSG, data: {type: 'danger', content: error} });
-    });
+    .catch(error => MessageActions.update(error, 'danger'));
 }
 
 export function runJob(device, job) {
   axios.post(`${url}/${device}`, { action: job })
     .then(res => {
-      Dispatcher.dispatch({ type: Constants.UPDATE_JOB_MSG,
-        data: {type: 'success',
-        content: `Job '${job}' has been sent.`} });
+      MessageActions.update(`Job '${job}' has been sent.`, 'success');
     })
-    .catch(error => { Dispatcher.dispatch(
-      { type: Constants.UPDATE_JOB_MSG, data: {type: 'danger', content: error} });
-    });
-}
-
-export function cleanJobMsg() {
-  Dispatcher.dispatch({ type: Constants.CLEAN_JOB_MSG });
+    .catch(error => MessageActions.update(error, 'danger'));
 }

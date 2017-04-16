@@ -1,10 +1,12 @@
 import React from 'react';
-import axios from 'axios';
 
+import Alert from './Alert';
 import Job from './Job';
 import JobForm from './JobForm';
 import * as JobActions from '../actions/JobActions';
+import * as MessageActions from '../actions/MessageActions';
 import JobStore from '../stores/JobStore';
+import MessageStore from '../stores/MessageStore';
 
 class ActionButton extends React.Component {
   constructor(props) {
@@ -68,23 +70,6 @@ class ActionsPanel extends React.Component {
   }
 }
 
-class Alert extends React.Component {
-  render () {
-    let box;
-    switch(this.props.type) {
-      case 'danger':
-        box = <div class="alert alert-danger" role="alert">{this.props.content}</div>;
-        break;
-      case 'success':
-        box = <div class="alert alert-success" role="alert">{this.props.content}</div>;
-        break;
-      default:
-        box = <div class="alert" role="alert">{this.props.content}</div>;
-    }
-    return box;
-  }
-}
-
 export default class DeviceDetails extends React.Component {
   constructor(props) {
     super(props);
@@ -94,6 +79,7 @@ export default class DeviceDetails extends React.Component {
     };
 
     this.getJobs = this.getJobs.bind(this);
+    this.getMsg = this.getMsg.bind(this);
     this.runAction = this.runAction.bind(this);
     this.addJob = this.addJob.bind(this);
     this.deleteJob = this.deleteJob.bind(this);
@@ -101,6 +87,7 @@ export default class DeviceDetails extends React.Component {
 
   componentWillMount() {
     JobStore.on("change", this.getJobs);
+    MessageStore.on("change", this.getMsg);
   }
 
   componentDidMount() {
@@ -109,14 +96,16 @@ export default class DeviceDetails extends React.Component {
 
   componentWillUnmount() {
     JobStore.removeListener("change", this.getJobs);
-    JobActions.cleanJobMsg();
+    MessageStore.removeListener("change", this.getMsg);
+    MessageActions.clean();
   }
 
   getJobs() {
-    this.setState({
-      jobs: JobStore.getAll(),
-      msg: JobStore.getMsg(),
-    });
+    this.setState({ jobs: JobStore.getAll() });
+  }
+
+  getMsg() {
+    this.setState({ msg: MessageStore.get() });
   }
 
   runAction(job) {
